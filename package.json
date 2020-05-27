@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/SDC-Phidias/products-endpoint/issues"
   },
-  "homepage": "https://github.com/SDC-Phidias/products-endpoint#readme"
+  "homepage": "https://github.com/SDC-Phidias/products-endpoint#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
