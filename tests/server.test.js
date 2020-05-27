@@ -7,7 +7,7 @@ describe('/list', () => {
     const response = await request(app).get('/product/list');
     expect(response.statusCode).toBe(200);
   });
-  test('It should have a response of an array of objects', async () => {
+  test('It should have a response of an object', async () => {
     const response = await request(app).get('/product/list');
     expect(typeof response.body).toEqual('object');
   });
