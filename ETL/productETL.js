@@ -2,14 +2,9 @@ const parse = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
-const cassandraClient = require('../databases/cassandra');
+const cassandraClient = require('../databases/cassandra/index.js');
 
 const productInfo = path.join(__dirname, '../data/product.csv');
-const features = path.join(__dirname, '../data/features.csv');
-const skus = path.join(__dirname, '../data/skus.csv');
-const photos = path.join(__dirname, '../data/photos.csv');
-const styles = path.join(__dirname, '../data/styles.csv');
-const related = path.join(__dirname, '../data/related.csv');
 
 const sanitizeData = new stream.Transform({ objectMode: true });
 

@@ -47,11 +47,6 @@ const featuresETL = () => {
         cache = [];
         cache.push({ feature: data.feature, value: data.value });
       }
-      // cassandraClient
-      //   .execute(productQueryTemplate, productQueryValues, { prepare: true })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
     })
     .on('end', () => {
       console.log('==>FEATURES HAVE BEEN POPULATED');

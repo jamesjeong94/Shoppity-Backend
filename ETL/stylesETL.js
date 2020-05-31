@@ -2,7 +2,8 @@ const parse = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
-const cassandraClient = require('../databases/cassandra');
+const cassandraClient = require('../databases/cassandra/index');
+const throttle = require('throttle');
 
 const styles = path.join(__dirname, '../data/styles.csv');
 
@@ -23,26 +24,33 @@ sanitizeData._transform = function (chunk, encoding, done) {
   done();
 };
 
-const productETL = () => {
-  const productQueryTemplate = `INSERT INTO sdc.products_list (product_id,name,slogan,description,category,default_price) VALUES (?,?,?,?,?,?)`;
-  const readStream = fs.createReadStream(productInfo, 'utf-8');
-
-  readStream.pipe(parse()).pipe(sanitizeData);
-  const timeBefore = new Date();
-
-  sanitizeData
-    .on('data', (data) => {
-      const productQueryValues = Object.values(data);
-      cassandraClient
-        .execute(productQueryTemplate, productQueryValues, { prepare: true })
-        .catch((err) => {
-          console.log(err);
-        });
+const insertQuery = (data) => {
+  const queryTemplate =
+    'INSERT INTO sdc.styles (style_id,product_id,name,sale_price,original_price,default_style) VALUES (?,?,?,?,?,?)';
+  cassandraClient
+    .execute(queryTemplate, Object.values(data), { prepare: true })
+    .then(() => {
+      console.log('done');
     })
-    .on('end', () => {
-      console.log('==>PRODUCT LIST HAS BEEN POPULATED');
-      console.log(
-        `Time taken for product_list ETL: ${new Date() - timeBefore}ms`
-      );
+    .catch((err) => {
+      console.log(err);
     });
 };
+
+const stylesETL = () => {
+  console.log('==>Running ETL for styles');
+  const readStream = fs.createReadStream(styles, 'utf-8');
+
+  readStream.pipe(new throttle(300000)).pipe(parse()).pipe(sanitizeData);
+  const timeBefore = new Date();
+  sanitizeData
+    .on('data', (data) => {
+      insertQuery(data);
+    })
+    .on('end', () => {
+      console.log('==>Styles HAS BEEN POPULATED');
+      console.log(`Time taken for styles ETL: ${new Date() - timeBefore}ms`);
+    });
+};
+
+stylesETL();
