@@ -15,7 +15,6 @@ const productInfoModel = {
   },
   getProductInfo: (product_id) => {
     const getListQuery = 'SELECT * FROM sdc.products_list WHERE product_id = ?';
-    console.log('model prod', product_id);
     return cassandraClient
       .execute(getListQuery, [product_id], { prepare: true })
       .then(({ rows }) => {

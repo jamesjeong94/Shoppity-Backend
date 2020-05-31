@@ -23,26 +23,37 @@ sanitizeData._transform = function (chunk, encoding, done) {
   done();
 };
 
-const productETL = () => {
-  const productQueryTemplate = `INSERT INTO sdc.products_list (product_id,name,slogan,description,category,default_price) VALUES (?,?,?,?,?,?)`;
-  const readStream = fs.createReadStream(productInfo, 'utf-8');
+const photosETL = () => {
+  const queryTemplate = `UPDATE sdc.styles SET photos = ? WHERE style_id = ?`;
+  const readStream = fs.createReadStream(photos, 'utf-8');
 
   readStream.pipe(parse()).pipe(sanitizeData);
   const timeBefore = new Date();
+  let prevId = '1';
+  let cache = [];
 
   sanitizeData
     .on('data', (data) => {
-      const productQueryValues = Object.values(data);
-      cassandraClient
-        .execute(productQueryTemplate, productQueryValues, { prepare: true })
-        .catch((err) => {
-          console.log(err);
-        });
+      if (data[1] === prevId) {
+        cache.push({ thumbnail_url: data[3], url: data[2] });
+      } else {
+        cassandraClient
+          .execute(queryTemplate, [cache, prevId], { prepare: true })
+          .then(() => {
+            console.log('Done');
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        prevId = data[1];
+        cache = [];
+        cache.push({ thumbnail_url: data[3], url: data[2] });
+      }
     })
     .on('end', () => {
-      console.log('==>PRODUCT LIST HAS BEEN POPULATED');
-      console.log(
-        `Time taken for product_list ETL: ${new Date() - timeBefore}ms`
-      );
+      console.log('==>PHOTOS HAS BEEN POPULATED');
+      console.log(`Time taken for photos ETL: ${new Date() - timeBefore}ms`);
     });
 };
+
+photosETL();
