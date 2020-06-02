@@ -7,16 +7,21 @@ const productInfoController = {
   },
   productInfo: (req, res) => {
     const product_id = req.params.product_id;
-    console.log(product_id);
     productsModel.getProductInfo(product_id).then((data) => {
       res.send(data);
     });
   },
   styles: (req, res) => {
-    console.log(req.params, 'style');
+    const product_id = req.params.product_id;
+    productsModel.getProductStyles(product_id).then((data) => {
+      res.send(data);
+    });
   },
   related: (req, res) => {
-    console.log(req.params, 'related');
+    const product_id = req.params.product_id;
+    productsModel.getRelatedProducts(product_id).then((data) => {
+      res.send(data);
+    });
   },
 };
 

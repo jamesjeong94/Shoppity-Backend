@@ -29,9 +29,6 @@ const insertQuery = (data) => {
     'INSERT INTO sdc.styles (style_id,product_id,name,sale_price,original_price,default_style) VALUES (?,?,?,?,?,?)';
   cassandraClient
     .execute(queryTemplate, Object.values(data), { prepare: true })
-    .then(() => {
-      console.log('done');
-    })
     .catch((err) => {
       console.log(err);
     });

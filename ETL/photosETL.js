@@ -7,47 +7,56 @@ const cassandraClient = require('../databases/cassandra');
 const photos = path.join(__dirname, '../data/photos.csv');
 
 const sanitizeData = new stream.Transform({ objectMode: true });
+const csvParse = new stream.Transform({ objectMode: true });
 
 sanitizeData._transform = function (chunk, encoding, done) {
-  for (let key in chunk) {
-    if (key === 'id') {
-      chunk[key] = Number(chunk[key]);
-    }
-    if (key.match(/[\s]/g)) {
-      let newKey = key.trim();
-      chunk[newKey] = chunk[key];
-      delete chunk[key];
-    }
-  }
   this.push(chunk);
   done();
 };
 
+csvParse._transform = function (chunk, encoding, done) {
+  let rows = chunk.split('\n');
+  rows.forEach((row) => {
+    let cells = row.split(',');
+
+    let newCells = cells.map((cell) => {
+      return cell.replace(/"/gi, '');
+    });
+    // newCells[1] = Number(newCells[1]);
+    this.push(newCells);
+  });
+  done();
+};
+
 const photosETL = () => {
-  const queryTemplate = `UPDATE sdc.styles SET photos = ? WHERE style_id = ?`;
+  const queryTemplate = `INSERT INTO sdc.photos (style_id, photos) VALUES (?, ?)`;
   const readStream = fs.createReadStream(photos, 'utf-8');
 
-  readStream.pipe(parse()).pipe(sanitizeData);
+  readStream.pipe(csvParse).pipe(sanitizeData);
   const timeBefore = new Date();
-  let prevId = '1';
+  let prevId = 1;
   let cache = [];
-
+  console.log('Inserting photos');
   sanitizeData
     .on('data', (data) => {
-      if (data[1] === prevId) {
+      let id = data[1];
+      if (prevId === id && data.length === 4) {
         cache.push({ thumbnail_url: data[3], url: data[2] });
       } else {
-        cassandraClient
-          .execute(queryTemplate, [cache, prevId], { prepare: true })
-          .then(() => {
-            console.log('Done');
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-        prevId = data[1];
-        cache = [];
-        cache.push({ thumbnail_url: data[3], url: data[2] });
+        if (data.length === 4) {
+          cache.push({ thumbnail_url: data[3], url: data[2] });
+          cassandraClient
+            .execute(queryTemplate, [prevId, cache], { prepare: true })
+            .then(() => {
+              // console.log('done');
+            })
+            .catch((err) => {
+              // console.log(prevId);
+              console.log(err);
+            });
+          prevId = id;
+          cache = [];
+        }
       }
     })
     .on('end', () => {

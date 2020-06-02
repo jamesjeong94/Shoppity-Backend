@@ -24,10 +24,32 @@ const productInfoModel = {
         console.log(err);
       });
   },
-  getProductStyles: (product_id) => {},
-  getRelatedProducts: (product_id) => {},
+  getProductStyles: (product_id) => {
+    const styleQuery = 'select * from sdc.styles where product_id = ?';
+    return cassandraClient
+      .execute(styleQuery, [product_id], { prepare: true })
+      .then(({ rows }) => {
+        return rows;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  },
+  getRelatedProducts: (product_id) => {
+    const relatedQuery = 'select * from sdc.related where product_id = ?';
+    return cassandraClient
+      .execute(relatedQuery, [product_id], {
+        prepare: true,
+      })
+      .then(({ rows }) => {
+        return rows[0].related_products;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  },
 };
 
-productInfoModel.getProductInfo('5');
+productInfoModel.getRelatedProducts('5');
 
 module.exports = productInfoModel;
