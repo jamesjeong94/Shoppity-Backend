@@ -3,7 +3,6 @@ const productsModel = require('../../databases/cassandra/model.js');
 const productInfoController = {
   list: (req, res) => {
     res.send([]);
-    console.log('list');
   },
   productInfo: (req, res) => {
     const product_id = req.params.product_id;

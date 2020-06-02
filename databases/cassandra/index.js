@@ -17,13 +17,13 @@ const client = new cassandra.Client({
 });
 
 client.connect((err) => {
-  if (err) {
-    console.log(err);
-  }
-  console.log('==>Successfully connected to database');
-  console.log('==>Initializing datatypes...');
+  // if (err) {
+  //   console.log(err);
+  // }
+  // console.log('==>Successfully connected to database');
+  // console.log('==>Initializing datatypes...');
   handleInit(datatypes, 'datatype');
-  console.log('==>Initializing tables...');
+  // console.log('==>Initializing tables...');
   handleInit(tables, 'table');
 });
 
@@ -32,7 +32,7 @@ const handleInit = (init, type) => {
     client
       .execute(init[key])
       .then(() => {
-        console.log(`${key} ${type}  has been initialized`);
+        // console.log(`${key} ${type}  has been initialized`);
       })
       .catch((err) => {
         console.log(err);
