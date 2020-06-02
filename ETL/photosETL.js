@@ -36,7 +36,6 @@ const photosETL = () => {
   const timeBefore = new Date();
   let prevId = 1;
   let cache = [];
-  console.log('Inserting photos');
   sanitizeData
     .on('data', (data) => {
       let id = data[1];

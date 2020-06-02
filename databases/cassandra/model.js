@@ -1,4 +1,5 @@
 const cassandraClient = require('./index.js');
+const Promise = require('bluebird');
 
 const productInfoModel = {
   getList: (page = 1, count = '5') => {
@@ -25,7 +26,11 @@ const productInfoModel = {
       });
   },
   getProductStyles: (product_id) => {
-    const styleQuery = 'select * from sdc.styles where product_id = ?';
+    const styleQuery =
+      'select style_id,default_style, original_price, sale_price from sdc.styles where product_id = ?';
+    let returnData = {
+      product_id: product_id,
+    };
     return cassandraClient
       .execute(styleQuery, [product_id], { prepare: true })
       .then(({ rows }) => {
@@ -49,7 +54,5 @@ const productInfoModel = {
       });
   },
 };
-
-productInfoModel.getRelatedProducts('5');
 
 module.exports = productInfoModel;

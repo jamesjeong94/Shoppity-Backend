@@ -10,9 +10,6 @@ const sanitizeData = new stream.Transform({ objectMode: true });
 
 sanitizeData._transform = function (chunk, encoding, done) {
   for (let key in chunk) {
-    if (key === 'id') {
-      chunk[key] = Number(chunk[key]);
-    }
     if (key.match(/[\s]/g)) {
       let newKey = key.trim();
       chunk[newKey] = chunk[key];
@@ -23,26 +20,38 @@ sanitizeData._transform = function (chunk, encoding, done) {
   done();
 };
 
-const productETL = () => {
-  const productQueryTemplate = `INSERT INTO sdc.products_list (product_id,name,slogan,description,category,default_price) VALUES (?,?,?,?,?,?)`;
-  const readStream = fs.createReadStream(productInfo, 'utf-8');
+const skusETL = () => {
+  const queryTemplate = `INSERT INTO sdc.skus (style_id,skus) VALUES (?,?)`;
+  const readStream = fs.createReadStream(skus, 'utf-8');
 
   readStream.pipe(parse()).pipe(sanitizeData);
   const timeBefore = new Date();
-
+  let prevId = '1';
+  let cache = [];
   sanitizeData
     .on('data', (data) => {
-      const productQueryValues = Object.values(data);
-      cassandraClient
-        .execute(productQueryTemplate, productQueryValues, { prepare: true })
-        .catch((err) => {
-          console.log(err);
-        });
+      // console.log(data);
+      if (prevId === data.styleId) {
+        cache.push({ size: data.size, quantity: data.quantity });
+      } else {
+        cache.push({ size: data.size, quantity: data.quantity });
+        // console.log(cache);
+        cassandraClient
+          .execute(queryTemplate, [prevId, cache], { prepare: true })
+          .then(() => {
+            console.log('inserted');
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        cache = [];
+        prevId = data.styleId;
+      }
     })
     .on('end', () => {
-      console.log('==>PRODUCT LIST HAS BEEN POPULATED');
-      console.log(
-        `Time taken for product_list ETL: ${new Date() - timeBefore}ms`
-      );
+      console.log('==>SKU HAS BEEN POPULATED');
+      console.log(`Time taken for SKU ETL: ${new Date() - timeBefore}ms`);
     });
 };
+
+skusETL();
