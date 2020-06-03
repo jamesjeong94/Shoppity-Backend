@@ -19,6 +19,8 @@ const productInfoModel = {
     return cassandraClient
       .execute(getListQuery, [product_id], { prepare: true })
       .then(({ rows }) => {
+        rows[0].id = rows[0].product_id;
+        delete rows[0].product_id;
         return rows[0];
       })
       .catch((err) => {
@@ -27,14 +29,26 @@ const productInfoModel = {
   },
   getProductStyles: (product_id) => {
     const styleQuery =
-      'select style_id,default_style, original_price, sale_price from sdc.styles where product_id = ?';
+      'select style_id,name,default_style, original_price, sale_price, photos,skus from sdc.styles where product_id = ?';
     let returnData = {
       product_id: product_id,
     };
     return cassandraClient
       .execute(styleQuery, [product_id], { prepare: true })
       .then(({ rows }) => {
-        return rows;
+        rows.forEach((row) => {
+          let cache = {};
+          console.log(row.skus);
+          row.skus.forEach((sku) => {
+            cache[sku.size] = sku.quantity;
+          });
+          row.skus = cache;
+        });
+        const formattedResult = {
+          product_id: product_id,
+          results: rows,
+        };
+        return formattedResult;
       })
       .catch((err) => {
         console.log(err);

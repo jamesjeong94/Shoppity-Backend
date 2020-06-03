@@ -1,7 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const productInfoController = require('../controllers/productInfoController.js');
 
 const router = express.Router();
+
+router.use(cors({ origin: 'http://localhost:4000' }));
+router.options(cors({ origin: 'http://localhost:4000' }));
 
 router.get('/list', productInfoController.list);
 
