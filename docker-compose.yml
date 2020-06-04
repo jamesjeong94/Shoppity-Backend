@@ -1,25 +1,28 @@
-version: '2'
+version: '3'
 services:
   web:
     build: .
-    command: npm run start-dev
+    command: ['ls']
+    command:
+      ['/usr/app/wait-for-it.sh', 'cassandra:9042','-t','50', '--', 'npm', 'run', 'start-dev']
     volumes:
       - .:/usr/app/
       - /usr/app/node_modules
     ports:
       - '3000:3000'
     depends_on:
-      - postgres
-    environment:
-      DATABASE_URL: //cassandra
-  # postgres:
-  #   image: postgres:9.6.2-alpine
-  #   environment:
-  #     POSTGRES_USER: todoapp
-  #     POSTGRES_DB: todos
+      - cassandra
+    restart: on-failure
+    environment: 
+      CASSANDRA_SERVER: cassandra
+    links:
+      - cassandra
   cassandra:
     image: cassandra:latest
     container_name: cassandra
+    ports:
+      - '9042:9042'
+      - '9160:9160'
     restart: always
   cassandra-load-keyspace:
     container_name: cassandra-load-keyspace
@@ -27,5 +30,5 @@ services:
     depends_on:
       - cassandra
     volumes:
-      - ./src/main/resources/cassandra_schema.cql:/schema.cql
-    command: /bin/bash -c "sleep 60 && echo loading cassandra keyspace && cqlsh cassandra -f /schema.cql"
+      - .:/usr/app/
+    command: /bin/bash -c "sleep 30 && echo loading cassandra keyspace && cqlsh cassandra -f usr/app/schema.cql"

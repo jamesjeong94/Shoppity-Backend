@@ -7,7 +7,8 @@ const app = express();
 app.use((req, res, next) => {
   next();
 });
-
+const host = process.env.CASSANDRA_SERVER || 'localhost';
+console.log('HOST:', host);
 app.use(cors({ origin: 'http://localhost:4000' }));
 app.options(cors({ origin: 'http://localhost:4000' }));
 

@@ -29,7 +29,7 @@ const productETL = () => {
 
   readStream.pipe(parse()).pipe(sanitizeData);
   const timeBefore = new Date();
-
+  console.log('==>**Product ETL started');
   sanitizeData
     .on('data', (data) => {
       const productQueryValues = Object.values(data);

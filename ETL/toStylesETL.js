@@ -49,5 +49,5 @@ const tableInsertion = (prod_id, id, data, table, field) => {
       });
   }
 };
-// addToStyles('photos', 'photos');
+addToStyles('photos', 'photos');
 addToStyles('skus', 'skus');
