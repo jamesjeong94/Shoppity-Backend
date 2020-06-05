@@ -2,7 +2,7 @@ const parse = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
-const cassandraClient = require('../databases/cassandra');
+const cassandraClient = require('../../databases/cassandra');
 
 const skus = path.join(__dirname, '../data/skus.csv');
 
@@ -54,4 +54,4 @@ const skusETL = () => {
     });
 };
 
-skusETL();
+module.exports = skusETL;

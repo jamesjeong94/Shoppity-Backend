@@ -1,8 +1,8 @@
 const lastProd = 710136;
 const fs = require('fs');
-const cassandraClient = require('../databases/cassandra');
+const cassandraClient = require('../../databases/cassandra');
 
-const addToStyles = async (table, field) => {
+const addToStyles = async (field) => {
   let query = 'SELECT style_id from sdc.styles where product_id = ?';
   cassandraClient;
   for (let i = 1; i < lastProd; i++) {
@@ -12,7 +12,7 @@ const addToStyles = async (table, field) => {
         return rows;
       })
       .then((rows) => {
-        let tableQuery = `SELECT ${field} from sdc.${table} where style_id = ?`;
+        let tableQuery = `SELECT ${field} from sdc.${field} where style_id = ?`;
         rows.forEach((data) => {
           // console.log(data.style_id);
           cassandraClient
@@ -20,7 +20,7 @@ const addToStyles = async (table, field) => {
             .then(({ rows }) => {
               // console.log(rows[0]);
               if (rows.length > 0) {
-                tableInsertion(i, data.style_id, rows[0][field], table, field);
+                tableInsertion(i, data.style_id, rows[0][field], field);
               }
             })
             .catch((err) => {
@@ -32,10 +32,10 @@ const addToStyles = async (table, field) => {
         console.log(err);
       });
   }
-  console.log(`Done transfering ${field} to table: ${table}`);
+  console.log(`Done transfering ${field} to table: ${field}`);
 };
 
-const tableInsertion = (prod_id, id, data, table, field) => {
+const tableInsertion = (prod_id, id, data, field) => {
   if (data) {
     const query = `UPDATE sdc.styles SET ${field} = ? WHERE product_id = ? AND style_id = ?`;
     // console.log(data);
@@ -49,5 +49,5 @@ const tableInsertion = (prod_id, id, data, table, field) => {
       });
   }
 };
-addToStyles('photos', 'photos');
-addToStyles('skus', 'skus');
+
+module.exports = addToStyles;

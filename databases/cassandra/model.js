@@ -30,15 +30,11 @@ const productInfoModel = {
   getProductStyles: (product_id) => {
     const styleQuery =
       'select style_id,name,default_style, original_price, sale_price, photos,skus from sdc.styles where product_id = ?';
-    let returnData = {
-      product_id: product_id,
-    };
     return cassandraClient
       .execute(styleQuery, [product_id], { prepare: true })
       .then(({ rows }) => {
         rows.forEach((row) => {
           let cache = {};
-          console.log(row.skus);
           row.skus.forEach((sku) => {
             cache[sku.size] = sku.quantity;
           });

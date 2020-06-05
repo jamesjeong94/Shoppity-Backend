@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const throttle = require('throttle');
-const cassandraClient = require('../databases/cassandra');
+const cassandraClient = require('../../databases/cassandra');
 
 const related = path.join(__dirname, '../data/related.csv');
 
@@ -53,4 +53,4 @@ const relatedETL = () => {
     });
 };
 
-relatedETL();
+module.exports = relatedETL;
