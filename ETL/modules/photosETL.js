@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const cassandraClient = require('../../databases/cassandra');
+const { logTimeAndResolve } = require('./ETLHelper.js');
 
-const photos = path.join(__dirname, '../data/photos.csv');
+const photos = path.join(__dirname, '../../data/photos.csv');
 
 const sanitizeData = new stream.Transform({ objectMode: true });
 const csvParse = new stream.Transform({ objectMode: true });
@@ -28,7 +29,7 @@ csvParse._transform = function (chunk, encoding, done) {
 };
 
 const photosETL = () => {
-  return new Promise((rej, res) => {
+  return new Promise((res, rej) => {
     const queryTemplate = `INSERT INTO sdc.photos (style_id, photos) VALUES (?, ?)`;
     const readStream = fs.createReadStream(photos, 'utf-8');
 
@@ -48,7 +49,7 @@ const photosETL = () => {
               .execute(queryTemplate, [prevId, cache], { prepare: true })
               .then(() => {})
               .catch((err) => {
-                console.log(err);
+                rej(err);
               });
             prevId = id;
             cache = [];
@@ -56,11 +57,9 @@ const photosETL = () => {
         }
       })
       .on('end', () => {
-        console.log('==>PHOTOS HAS BEEN POPULATED');
-        console.log(`Time taken for photos ETL: ${new Date() - timeBefore}ms`);
-        return true;
+        logTimeAndResolve(timeBefore, 'photos', res);
       });
   });
 };
 
-module.expots = photosETL;
+module.exports = photosETL;

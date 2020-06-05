@@ -4,8 +4,9 @@ const path = require('path');
 const stream = require('stream');
 const cassandraClient = require('../../databases/cassandra/index');
 const throttle = require('throttle');
+const { logTimeAndResolve } = require('./ETLHelper');
 
-const styles = path.join(__dirname, '../data/styles.csv');
+const styles = path.join(__dirname, '../../data/styles.csv');
 
 const sanitizeData = new stream.Transform({ objectMode: true });
 
@@ -24,30 +25,27 @@ sanitizeData._transform = function (chunk, encoding, done) {
   done();
 };
 
-const insertQuery = (data) => {
-  const queryTemplate =
-    'INSERT INTO sdc.styles (style_id,product_id,name,sale_price,original_price,default_style) VALUES (?,?,?,?,?,?)';
-  cassandraClient
-    .execute(queryTemplate, Object.values(data), { prepare: true })
-    .catch((err) => {
-      console.log(err);
-    });
-};
-
 const stylesETL = () => {
-  console.log('==>Running ETL for styles');
-  const readStream = fs.createReadStream(styles, 'utf-8');
+  return new Promise((res, rej) => {
+    console.log('==>Running ETL for styles');
+    const readStream = fs.createReadStream(styles, 'utf-8');
 
-  readStream.pipe(new throttle(300000)).pipe(parse()).pipe(sanitizeData);
-  const timeBefore = new Date();
-  sanitizeData
-    .on('data', (data) => {
-      insertQuery(data);
-    })
-    .on('end', () => {
-      console.log('==>Styles HAS BEEN POPULATED');
-      console.log(`Time taken for styles ETL: ${new Date() - timeBefore}ms`);
-    });
+    readStream.pipe(new throttle(400000)).pipe(parse()).pipe(sanitizeData);
+    const timeBefore = new Date();
+    sanitizeData
+      .on('data', (data) => {
+        const queryTemplate =
+          'INSERT INTO sdc.styles (style_id,product_id,name,sale_price,original_price,default_style) VALUES (?,?,?,?,?,?)';
+        cassandraClient
+          .execute(queryTemplate, Object.values(data), { prepare: true })
+          .catch((err) => {
+            rej();
+          });
+      })
+      .on('end', () => {
+        logTimeAndResolve(timeBefore, 'styles', res);
+      });
+  });
 };
 
 module.exports = stylesETL;

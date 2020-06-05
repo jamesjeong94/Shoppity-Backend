@@ -14,7 +14,6 @@ const addToStyles = async (field) => {
       .then((rows) => {
         let tableQuery = `SELECT ${field} from sdc.${field} where style_id = ?`;
         rows.forEach((data) => {
-          // console.log(data.style_id);
           cassandraClient
             .execute(tableQuery, [data.style_id], { prepare: true })
             .then(({ rows }) => {

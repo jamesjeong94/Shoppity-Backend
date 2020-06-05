@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const cassandraClient = require('../../databases/cassandra/index.js');
+const { logTimeAndResolve } = require('./ETLHelper');
 
 const productInfo = path.join(__dirname, '../../data/product.csv');
 
@@ -33,21 +34,18 @@ const productETL = () => {
     console.log('==>**Product ETL started');
     sanitizeData
       .on('data', (data) => {
-        // const productQueryValues = Object.values(data);
-        // cassandraClient
-        //   .execute(productQueryTemplate, productQueryValues, { prepare: true })
-        //   .catch((err) => {
-        //     console.log(err);
-        //   });
+        const productQueryValues = Object.values(data);
+        cassandraClient
+          .execute(productQueryTemplate, productQueryValues, { prepare: true })
+          .catch((err) => {
+            console.log(err);
+          });
       })
       .on('error', (err) => {
         rej(err);
       })
       .on('end', () => {
-        const timeElasped = new Date() - timeBefore;
-        console.log('==>PRODUCT LIST HAS BEEN POPULATED');
-        console.log(`Time taken for product_list ETL: ${timeElasped}ms`);
-        res({ products: timeElasped });
+        logTimeAndResolve(timeBefore, 'product', res);
       });
   });
 };
