@@ -4,14 +4,14 @@ const startETL = () => {
   const totalTimeResults = [];
   modulesETL
     .productETL()
-    // .then((data) => {
-    //   totalTimeResults.push(data);
-    //   return modulesETL.stylesETL();
-    // })
     .then((data) => {
       totalTimeResults.push(data);
-      return modulesETL.photosETL();
+      return modulesETL.stylesETL();
     })
+    // .then((data) => {
+    //   totalTimeResults.push(data);
+    //   return modulesETL.photosETL();
+    // })
     .then((data) => {
       totalTimeResults.push(data);
       return modulesETL.relatedETL();

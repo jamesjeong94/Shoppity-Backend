@@ -32,7 +32,7 @@ const photosETL = () => {
   return new Promise((res, rej) => {
     const queryTemplate = `INSERT INTO sdc.photos (style_id, photos) VALUES (?, ?)`;
     const readStream = fs.createReadStream(photos, 'utf-8');
-
+    console.log('==>**photo ETL started');
     readStream.pipe(csvParse).pipe(sanitizeData);
     const timeBefore = new Date();
     let prevId = 1;

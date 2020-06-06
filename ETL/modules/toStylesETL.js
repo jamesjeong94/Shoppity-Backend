@@ -1,5 +1,4 @@
 const lastProd = 710136;
-const fs = require('fs');
 const cassandraClient = require('../../databases/cassandra');
 
 const addToStyles = async (field) => {
@@ -17,7 +16,6 @@ const addToStyles = async (field) => {
           cassandraClient
             .execute(tableQuery, [data.style_id], { prepare: true })
             .then(({ rows }) => {
-              // console.log(rows[0]);
               if (rows.length > 0) {
                 tableInsertion(i, data.style_id, rows[0][field], field);
               }
@@ -32,6 +30,7 @@ const addToStyles = async (field) => {
       });
   }
   console.log(`Done transfering ${field} to table: ${field}`);
+  return;
 };
 
 const tableInsertion = (prod_id, id, data, field) => {
@@ -47,6 +46,7 @@ const tableInsertion = (prod_id, id, data, field) => {
         console.log(err);
       });
   }
+  return;
 };
 
 module.exports = addToStyles;

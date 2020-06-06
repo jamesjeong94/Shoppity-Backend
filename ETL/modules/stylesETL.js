@@ -30,7 +30,7 @@ const stylesETL = () => {
     console.log('==>Running ETL for styles');
     const readStream = fs.createReadStream(styles, 'utf-8');
 
-    readStream.pipe(new throttle(400000)).pipe(parse()).pipe(sanitizeData);
+    readStream.pipe(new throttle(1000000)).pipe(parse()).pipe(sanitizeData);
     const timeBefore = new Date();
     sanitizeData
       .on('data', (data) => {

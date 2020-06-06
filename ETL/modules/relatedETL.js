@@ -30,8 +30,9 @@ const relatedETL = () => {
     const queryTemplate = `INSERT INTO sdc.related (product_id, related_products) VALUES (?, ?)`;
     const readStream = fs.createReadStream(related, 'utf-8');
 
-    readStream.pipe(new throttle(400000)).pipe(parse()).pipe(sanitizeData);
+    readStream.pipe(new throttle(1000000)).pipe(parse()).pipe(sanitizeData);
     const timeBefore = new Date();
+
     let prevId = '1';
     let cache = [];
     sanitizeData
