@@ -8,7 +8,8 @@
     "start-dev": "nodemon server/index.js",
     "init-dev": "node databases/cassandra/index.js",
     "ETL": "node ETL/index.js",
-    "sync": "aws s3 sync . s3://jj-hr-sdc"
+    "sync": "rm -r node_modules; aws s3 sync . s3://jj-hr-sdc --delete; npm i",
+    "pf-prod": "sudo iptables -t nat -A PREROUTING -t eth0 -p tcp --dport 80 -j REDIRECT --to-port 3000"
   },
   "repository": {
     "type": "git",
