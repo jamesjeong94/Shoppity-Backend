@@ -7,8 +7,8 @@ const host = process.env.CASSANDRA_SERVER || '127.0.0.1';
 console.log('HOST:', host);
 
 const client = new cassandra.Client({
-  contactPoints: [host],
-  localDataCenter: 'datacenter1',
+  contactPoints: ['3.236.11.46', '34.227.94.104'],
+  localDataCenter: 'us-east',
   // keyspace: 'sdc',
   pooling: {
     coreConnectionsPerHost: {
@@ -27,7 +27,7 @@ const init = () => {
     const initKeyspaceQuery = `CREATE KEYSPACE IF NOT EXISTS sdc
     WITH REPLICATION = { 
      'class' : 'SimpleStrategy', 
-     'replication_factor' : 1 
+     'replication_factor' : 2 
     };`;
     client.execute(initKeyspaceQuery, [], (err) => {
       if (err) console.log(err);
