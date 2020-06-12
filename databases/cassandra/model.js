@@ -1,5 +1,4 @@
 const cassandraClient = require('./index.js');
-const Promise = require('bluebird');
 
 const productInfoModel = {
   getList: (page = 1, count = '5') => {

@@ -3,21 +3,6 @@ const app = require('../server/server.js');
 const samples = require('./samples');
 //Testing basic server endpoints
 
-describe('/products/list', () => {
-  afterAll((done) => {
-    app.close(done);
-  });
-
-  test('It should have a status code of 200', async () => {
-    const response = await request(app).get('/products/list');
-    expect(response.statusCode).toBe(200);
-  });
-  test('It should have a response of an object', async () => {
-    const response = await request(app).get('/products/list');
-    expect(typeof response.body).toEqual('object');
-  });
-});
-
 describe('products/:productid/', () => {
   const endpoint = '/products/1';
   test('It should have a status code of 200', async () => {
